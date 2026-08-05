@@ -1,5 +1,7 @@
 # DisGeNET Cube — Web Platform
 
+The Parte_1 folder contains the SQL scripts responsible for the Relational Data Modelling and the Extract, Transform, and Load (ETL) pipelines.
+
 > Infrastructure Note:
 > This project was developed as part of a Database Systems university course, connected to an institutional SQL Server Data Warehouse. As the academic semester has concluded, the live database is no longer accessible, and consequently, the 'Search' and 'Statistics' pages are currently non-functional. The source code is provided here to demonstrate the ETL logic, system architecture, and UI/UX design implementation.
 
