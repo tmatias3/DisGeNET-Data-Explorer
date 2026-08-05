@@ -1,4 +1,4 @@
-# README - Parte I 
+# README - Part I 
 
 This document describes the work performed for the initial preparation of the SQLite database, data volume reduction, export to CSV files, creation of the staging area, construction of the **DisGeNET cube** and data loading.
 
