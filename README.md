@@ -1,1 +1,0 @@
-# DisGeNET-Data-Explorer
