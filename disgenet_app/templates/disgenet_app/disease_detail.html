@@ -1,0 +1,130 @@
+{% extends 'disgenet_app/base.html' %}
+{% block title %}Disease Detail{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <div class="fu" style="margin-bottom: 28px;">
+    <p class="eyebrow">Disease Detail</p>
+    <h1 style="font-family: var(--serif); font-size: 2.2rem; font-weight: 400; margin-bottom: 8px;">
+      {{ disease.name|default:disease.diseaseID }}
+    </h1>
+    <p style="color: var(--text-2); font-size: .9rem;">
+      Disease ID: <strong>{{ disease.diseaseID }}</strong>
+      {% if disease.typeID %} · Type: <strong>{{ disease.typeID.name }}</strong>{% endif %}
+    </p>
+
+    {% if request.GET.next %}
+      <a href="{{ request.GET.next }}" class="btn btn-ghost" style="margin-top: 14px; display: inline-flex; align-items: center;">
+        ← Back to search
+      </a>
+    {% else %}
+      <a href="{% url 'disgenet_app:search' %}" class="btn btn-ghost" style="margin-top: 14px; display: inline-flex; align-items: center;">
+        ← Back to search
+      </a>
+    {% endif %}
+    
+  </div>
+
+  <div class="fu2" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+    <div class="stat-pill">
+      <span class="val">{{ stats.gda_count|default:"0" }}</span>
+      <span class="lbl">GDA records</span>
+    </div>
+    <div class="stat-pill">
+      <span class="val">{{ stats.avg_score|floatformat:3|default:"–" }}</span>
+      <span class="lbl">Average score</span>
+    </div>
+    <div class="stat-pill">
+      <span class="val">{{ stats.total_npmid|default:"0" }}</span>
+      <span class="lbl">Total nPmid</span>
+    </div>
+  </div>
+
+  <div class="fu3" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+    <div class="card">
+      <p class="eyebrow">Top Genes</p>
+      {% if genes %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Gene</th>
+              <th style="text-align:right;">Associations</th>
+              <th style="text-align:right;">Avg Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for g in genes %}
+            <tr>
+              <td>{{ g.geneID__name|default:g.geneID__geneID }}</td>
+              <td style="text-align:right;">{{ g.gda_count }}</td>
+              <td style="text-align:right;">{{ g.avg_score|floatformat:3 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p style="color: var(--text-3);">No gene associations found.</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <p class="eyebrow">Top Sources</p>
+      {% if sources %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th style="text-align:right;">Associations</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in sources %}
+            <tr>
+              <td>{{ s.sourceID__name|default:s.sourceID__sourceID }}</td>
+              <td style="text-align:right;">{{ s.gda_count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p style="color: var(--text-3);">No source associations found.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card fu4">
+    <p class="eyebrow">Associations by Year</p>
+    {% if yearly %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th style="text-align:right;">GDA Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for y in yearly %}
+          <tr>
+            <td>{{ y.year }}</td>
+            <td style="text-align:right;">{{ y.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p style="color: var(--text-3);">No yearly data available.</p>
+    {% endif %}
+  </div>
+
+  <div class="card fu4" style="margin-top: 20px;">
+    <p class="eyebrow">Quick Help</p>
+    <p style="color: var(--text-2); font-size: .9rem; line-height: 1.8;">
+      <strong>Score</strong> measures the strength of the association.
+      <strong>nPmid</strong> is the number of PubMed IDs supporting the record.
+      GDA means gene–disease association.
+    </p>
+  </div>
+
+</div>
+{% endblock %}

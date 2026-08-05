@@ -1,0 +1,218 @@
+{% extends 'disgenet_app/base.html' %}
+{% block title %}Search Diseases{% endblock %}
+
+{% block extra_head %}
+<style>
+  .search-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
+  .field .form-control {
+    min-width: 180px;
+    height: 38px;
+    padding: 6px 10px;
+    font-size: .9rem;
+  }
+  
+  .results-info { font-size: .82rem; color: var(--text-3); margin-bottom: 14px; }
+  .results-info strong { color: var(--text); font-weight: 600; }
+
+  .type-pill {
+    display: inline-block; font-size: .7rem; font-weight: 500;
+    padding: 2px 8px; border-radius: 20px;
+    background: #eff6ff; color: var(--accent); border: 1px solid #bfdbfe;
+  }
+
+  .empty {
+    text-align: center; padding: 64px 24px; color: var(--text-3);
+  }
+  .empty h3 { font-family: var(--serif); font-size: 1.3rem; font-weight: 400; color: var(--text-2); margin-bottom: 8px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <!-- Header -->
+  <div class="fu" style="margin-bottom: 32px;">
+    <p class="eyebrow">DisGeNET Cube</p>
+    <h1 style="font-family: var(--serif); font-size: 2.2rem; font-weight: 400; margin-bottom: 8px;">
+      Disease Search
+    </h1>
+    <p style="color: var(--text-2); font-size: .9rem;">
+      Filter and browse diseases from the cube. Combine name search with type dropdown.
+    </p>
+  </div>
+
+  <!-- Search form -->
+  <div class="card fu2" style="margin-bottom: 28px;">
+    <form method="GET" action="{% url 'disgenet_app:search' %}">
+      <div class="search-row">
+
+        <div class="field" style="flex: 1; min-width: 180px;">
+          <label for="nameFilter">Disease name</label>
+          <input type="text" id="nameFilter" name="nameFilter"
+                 class="form-control" value="{{ currentNameFilter }}"
+                 placeholder="e.g. diabetes, alzheimer…" autocomplete="off">
+        </div>
+
+        <div class="field" style="min-width: 190px;">
+          <label for="typeFilter">Disease type</label>
+          <select id="typeFilter" name="typeFilter" class="form-control">
+            <option value="" {% if not currentTypeFilter %}selected{% endif %}>All types</option>
+            {% for dtype in disease_types %}
+              <option value="{{ dtype.typeID }}"
+                {% if dtype.typeID|stringformat:"s" == currentTypeFilter|stringformat:"s" %}selected{% endif %}>
+                {{ dtype.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field" style="min-width: 170px;">
+          <label for="sortBy">Sort by</label>
+          <select id="sortBy" name="sortBy" class="form-control">
+            <option value="" {% if not currentSort %}selected{% endif %}>Default</option>
+            <option value="name" {% if currentSort == 'name' %}selected{% endif %}>Name</option>
+            <option value="gda_count" {% if currentSort == 'gda_count' %}selected{% endif %}>GDA count</option>
+            <option value="avg_score" {% if currentSort == 'avg_score' %}selected{% endif %}>Avg score</option>
+          </select>
+        </div>
+
+        <div class="field" style="min-width: 170px;">
+          <label for="perPage">Results per page</label>
+          <select id="perPage" name="perPage" class="form-control">
+            <option value="15" {% if currentPerPage == 15 %}selected{% endif %}>15</option>
+            <option value="30" {% if currentPerPage == 30 %}selected{% endif %}>30</option>
+            <option value="50" {% if currentPerPage == 50 %}selected{% endif %}>50</option>
+          </select>
+        </div>
+
+        <div class="field" style="min-width: auto;">
+          <label style="visibility: hidden;">Actions</label>
+          <div style="display:flex; gap:10px; align-items:flex-end;">
+            <button type="submit" class="btn btn-primary btn-compact">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px; flex-shrink: 0;">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              Search
+            </button>
+
+            {% if hasFilters %}
+              <a href="{% url 'disgenet_app:search' %}" class="btn btn-ghost" style="height: 38px; display:inline-flex; align-items:center;">
+                Clear
+              </a>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </form>
+  </div>
+
+  <!-- Results -->
+  <div class="fu3">
+    {% if page_obj %}
+      <p class="results-info">
+        Showing <strong>{{ page_obj.start_index }}–{{ page_obj.end_index }}</strong>
+        of <strong>{{ total_results }}</strong> diseases
+        {% if currentNameFilter %} matching "<strong>{{ currentNameFilter }}</strong>"{% endif %}
+        {% if selectedType %} filtered by <strong>{{ selectedType.name }}</strong>{% endif %}
+        {% if currentSort %} sorted by <strong>{{ currentSort }}</strong>{% endif %}
+      </p>
+
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Disease ID</th>
+              <th>Name</th>
+              <th>Type</th>
+              <th style="text-align: right;">GDA Count</th>
+              <th>Avg Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in page_obj %}
+            <tr>
+              <td><span class="badge badge-blue">{{ d.diseaseID }}</span></td>
+              <td style="font-weight: 500;">
+                <a href="{% url 'disgenet_app:disease_detail' d.diseaseID %}?next={{ request.get_full_path|urlencode }}" style="color: inherit; text-decoration: none;">
+                {{ d.name|default:"–" }}
+                </a>
+              </td>
+              <td>
+                {% if d.typeID %}
+                  <span class="type-pill">{{ d.typeID.name }}</span>
+                {% else %}
+                  <span style="color: var(--text-3);">–</span>
+                {% endif %}
+              </td>
+              <td style="text-align: right; color: var(--text-2); font-size: .82rem;">
+                {{ d.gda_count|default:"0" }}
+              </td>
+              <td>
+                {% if d.avg_score %}
+                  <div class="score-wrap">
+                    <div class="score-bar">
+                      <div class="score-fill" style="width: {{ d.avg_score|floatformat:0 }}%;"></div>
+                    </div>
+                    <span class="score-num">{{ d.avg_score|floatformat:3 }}</span>
+                  </div>
+                {% else %}
+                  <span style="color: var(--text-3);">–</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if page_obj.paginator.num_pages > 1 %}
+      <div class="pagination">
+        {% if page_obj.has_previous %}
+          <a href="?page=1&nameFilter={{ currentNameFilter }}&typeFilter={{ currentTypeFilter }}&sortBy={{ currentSort }}&perPage={{ currentPerPage }}">&laquo;</a>
+          <a href="?page={{ page_obj.previous_page_number }}&nameFilter={{ currentNameFilter }}&typeFilter={{ currentTypeFilter }}&sortBy={{ currentSort }}&perPage={{ currentPerPage }}">Prev</a>
+        {% else %}
+          <span class="disabled">&laquo;</span>
+          <span class="disabled">Prev</span>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span class="current">{{ num }}</span>
+          {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+            <a href="?page={{ num }}&nameFilter={{ currentNameFilter }}&typeFilter={{ currentTypeFilter }}&sortBy={{ currentSort }}&perPage={{ currentPerPage }}">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}&nameFilter={{ currentNameFilter }}&typeFilter={{ currentTypeFilter }}&sortBy={{ currentSort }}&perPage={{ currentPerPage }}">Next</a>
+          <a href="?page={{ page_obj.paginator.num_pages }}&nameFilter={{ currentNameFilter }}&typeFilter={{ currentTypeFilter }}&sortBy={{ currentSort }}&perPage={{ currentPerPage }}">&raquo;</a>
+        {% else %}
+          <span class="disabled">Next</span>
+          <span class="disabled">&raquo;</span>
+        {% endif %}
+
+        <span style="font-size: .75rem; color: var(--text-3); margin-left: 6px;">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+      </div>
+      {% endif %}
+
+    {% else %}
+      <div class="card">
+        <div class="empty">
+          <h3>No diseases found</h3>
+          <p style="font-size: .875rem;">Try different filters or
+            <a href="{% url 'disgenet_app:search' %}">clear all</a>.
+          </p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

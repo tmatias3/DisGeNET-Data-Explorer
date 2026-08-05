@@ -1,0 +1,156 @@
+{% extends 'disgenet_app/base.html' %}
+{% load static %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <!-- Hero -->
+  <div style="max-width: 900px; margin: 0 auto; text-align: center; padding: 24px 16px 0; margin-bottom: 56px;">
+    <p class="eyebrow" style="margin-bottom: 14px;">DisGeNET Cube</p>
+
+    <h1 style="font-family: var(--serif); font-size: clamp(3rem, 7vw, 6.2rem); line-height: 0.95; letter-spacing: -0.04em; margin: 0 auto 18px; max-width: 11ch;">
+      Analytical Data Warehouse
+    </h1>
+
+    <p style="max-width: 720px; margin: 0 auto; font-size: clamp(1rem, 1.5vw, 1.15rem); line-height: 1.75; color: var(--text-2);">
+      A multidimensional analytical platform built on the DisGeNET 2020 database, providing curated gene–disease and variant–disease associations for research and exploration.
+    </p>
+  </div>
+
+  <!-- Stats row -->
+  <div class="fu2" style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-bottom: 56px;">
+    <div class="stat-pill" style="min-width: 108px; text-align: center;">
+      <span class="val">{{ n_diseases }}</span>
+      <span class="lbl">Diseases</span>
+    </div>
+    <div class="stat-pill" style="min-width: 108px; text-align: center;">
+      <span class="val">{{ n_genes }}</span>
+      <span class="lbl">Genes</span>
+    </div>
+    <div class="stat-pill" style="min-width: 108px; text-align: center;">
+      <span class="val">{{ n_gda }}</span>
+      <span class="lbl">GDA records</span>
+    </div>
+    <div class="stat-pill" style="min-width: 108px; text-align: center;">
+      <span class="val">{{ n_vda }}</span>
+      <span class="lbl">VDA records</span>
+    </div>
+    <div class="stat-pill" style="min-width: 108px; text-align: center;">
+      <span class="val">{{ n_disease_types }}</span>
+      <span class="lbl">Disease types</span>
+    </div>
+    <div class="stat-pill" style="min-width: 108px; text-align: center;">
+      <span class="val">{{ n_variants }}</span>
+      <span class="lbl">Variants</span>
+    </div>
+  </div>
+
+  <!-- Two columns -->
+  <div class="fu3" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+
+    <!-- About the project -->
+    <div class="card">
+      <p class="eyebrow">The Project</p>
+      <h2 style="font-family: var(--serif); font-size: 1.35rem; font-weight: 400; margin-bottom: 14px;">
+        What is DisGeNET Cube?
+      </h2>
+      <p style="color: var(--text-2); font-size: .9rem; line-height: 1.8; margin-bottom: 12px;">
+        This project is part of the <strong style="color: var(--text); font-weight: 600;">Sistemas de Bases de Dados</strong>
+        course at the Universidade de Aveiro. It implements a full ETL pipeline from the original
+        SQLite DisGeNET 2020 database into a SQL Server data warehouse optimised for analytical queries.
+      </p>
+      <p style="color: var(--text-2); font-size: .9rem; line-height: 1.8;">
+        The warehouse follows a <strong style="color: var(--text); font-weight: 600;">star schema</strong>
+        with two fact tables and five dimension tables, enabling efficient multidimensional analysis
+        across genes, diseases, variants, sources, and time.
+      </p>
+    </div>
+
+    <!-- Schema -->
+    <div class="card">
+      <p class="eyebrow">Schema Overview</p>
+      <h2 style="font-family: var(--serif); font-size: 1.35rem; font-weight: 400; margin-bottom: 16px;">
+        Cube Structure
+      </h2>
+      <div style="display: flex; flex-direction: column; gap: 9px;">
+        <!-- Hardcoded rows -->
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: .84rem;">
+          <span style="font-weight: 500; color: var(--text);">FACT_GDA</span>
+          <span class="badge badge-amber">fact</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: .84rem;">
+          <span style="font-weight: 500; color: var(--text);">FACT_VDA</span>
+          <span class="badge badge-amber">fact</span>
+        </div>
+        <hr class="divider" style="margin: 4px 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: .84rem;">
+          <span style="color: var(--text-2);">DIM_Gene</span>
+          <span class="badge badge-blue">dimension</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: .84rem;">
+          <span style="color: var(--text-2);">DIM_Disease</span>
+          <span class="badge badge-blue">dimension</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: .84rem;">
+          <span style="color: var(--text-2);">DIM_DiseaseType</span>
+          <span class="badge badge-blue">dimension</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: .84rem;">
+          <span style="color: var(--text-2);">DIM_Variant</span>
+          <span class="badge badge-blue">dimension</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: .84rem;">
+          <span style="color: var(--text-2);">DIM_Source</span>
+          <span class="badge badge-blue">dimension</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Quick Help -->
+  <div class="card fu4" style="margin-bottom: 24px;">
+    <p class="eyebrow">Quick Help</p>
+    <ul style="color: var(--text-2); font-size: .9rem; line-height: 1.8; padding-left: 18px;">
+      <li><strong>Score</strong> measures the strength of the association.</li>
+      <li><strong>nPmid</strong> is the number of PubMed IDs supporting the record.</li>
+      <li><strong>GDA</strong> means gene–disease association.</li>
+      <li><strong>VDA</strong> means variant–disease association.</li>
+    </ul>
+  </div>
+
+  <!-- Authors -->
+  <div class="card fu4">
+    <p class="eyebrow" style="margin-bottom: 16px;">Authors · Team 06</p>
+    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+
+      <div style="flex: 1; min-width: 200px; padding: 20px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: row; align-items: center; gap: 16px;">
+        <div style="flex: 1;">
+          <p style="font-weight: 600; font-size: .95rem; margin-bottom: 4px;">Tomás Matias</p>
+          <p style="font-size: .82rem; color: var(--text-3);">Nº 108994 · DCM, UA</p>
+          <p style="font-size: .82rem; color: var(--text-3);">tomasalvesmatias@ua.pt</p>
+        </div>
+        <img src="{% static 'img/tomas.jpeg' %}" 
+            style="width: 72px; height: 72px; border-radius: 12px; object-fit: cover; flex-shrink: 0;">
+      </div>
+
+      <div style="flex: 1; min-width: 200px; padding: 20px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: row; align-items: center; gap: 16px;">
+        <div style="flex: 1;">
+          <p style="font-weight: 600; font-size: .95rem; margin-bottom: 4px;">João Cordeiro</p>
+          <p style="font-size: .82rem; color: var(--text-3);">Nº 114932 · DCM, UA</p>
+          <p style="font-size: .82rem; color: var(--text-3);">jscordeiro@ua.pt</p>
+        </div>
+        <img src="{% static 'img/joao.jpg' %}" 
+            style="width: 72px; height: 72px; border-radius: 12px; object-fit: cover; flex-shrink: 0;">
+      </div>
+
+    </div>
+    <p style="margin-top: 16px; font-size: .8rem; color: var(--text-3);">
+      Connected to <strong style="color: var(--text);">team_06</strong> on SQL Server · DisGeNET cube schema
+    </p>
+  </div>
+
+
+</div>
+{% endblock %}
